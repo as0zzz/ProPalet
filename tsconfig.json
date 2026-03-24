@@ -1,0 +1,29 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "baseUrl": ".",
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "types": [
+      "react"
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "sf-symbols-typescript": [
+        "./src/types/sf-symbols-typescript"
+      ]
+    }
+  },
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "app.config.ts"
+  ]
+}

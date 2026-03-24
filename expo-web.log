@@ -1,0 +1,99 @@
+
+> propalet@1.0.0 web
+> expo start --web -c
+
+Starting project at C:\Project\ProPalet
+Using src/app as the root directory for Expo Router.
+React Compiler enabled
+Starting Metro Bundler
+
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundling failed 3646ms node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (2 modules)
+
+Metro error: SyntaxError: C:\Project\ProPalet\node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\build\static\renderStaticContent.js: Unexpected token, expected "</>/<=/>=" (77:13)
+
+[0m [90m 75 |[39m         context[33m:[39m _ctx_1[33m.[39mctx[33m,[39m
+ [90m 76 |[39m         wrapper[33m:[39m ({ children }) [33m=>[39m ([33m<[39m[33mRoot[39m[33m>[39m
+[31m[1m>[22m[39m[90m 77 |[39m         [33m<[39m[33mdiv[39m id[33m=[39m[32m"root"[39m[33m>[39m{children}[33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m    |[39m              [31m[1m^[22m[39m
+ [90m 78 |[39m       [33m<[39m[33m/[39m[33mRoot[39m[33m>[39m)[33m,[39m
+ [90m 79 |[39m     })[33m;[39m
+ [90m 80 |[39m     [90m// Clear any existing static resources from the global scope to attempt to prevent leaking between pages.[39m[0m
+
+Call Stack
+  <unknown> (node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\build\static\renderStaticContent.js)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓░░░░░░░░░░░ 34.0% ( 8/18)
+λ Bundling failed 821ms node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (1 module)
+
+Metro error: SyntaxError: C:\Project\ProPalet\node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\build\static\renderStaticContent.js: Unexpected token, expected "</>/<=/>=" (77:13)
+
+[0m [90m 75 |[39m         context[33m:[39m _ctx_1[33m.[39mctx[33m,[39m
+ [90m 76 |[39m         wrapper[33m:[39m ({ children }) [33m=>[39m ([33m<[39m[33mRoot[39m[33m>[39m
+[31m[1m>[22m[39m[90m 77 |[39m         [33m<[39m[33mdiv[39m id[33m=[39m[32m"root"[39m[33m>[39m{children}[33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m    |[39m              [31m[1m^[22m[39m
+ [90m 78 |[39m       [33m<[39m[33m/[39m[33mRoot[39m[33m>[39m)[33m,[39m
+ [90m 79 |[39m     })[33m;[39m
+ [90m 80 |[39m     [90m// Clear any existing static resources from the global scope to attempt to prevent leaking between pages.[39m[0m
+
+Call Stack
+  <unknown> (node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\build\static\renderStaticContent.js)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 66.6% (40/49)
+Web node_modules\expo-router\_error.js ▓▓░░░░░░░░░░░░░░ 14.8% ( 7/21)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 90.4% (59/66)
+Web node_modules\expo-router\_error.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 78.3% ( 92/104)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\_error.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 94.0% (64/66)
+Web node_modules\expo-router\_error.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 78.3% ( 92/104)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\_error.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundling failed 7447ms node_modules\expo-router\entry.js (1 module)
+Web Bundling failed 12716ms node_modules\expo-router\entry.js (70 modules)
+Web node_modules\expo-router\_error.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 93.8% (124/128)
+Web node_modules\expo-router\_error.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundling failed 85ms node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (1 module)
+
+Metro error: SyntaxError: C:\Project\ProPalet\node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\build\static\renderStaticContent.js: Unexpected token, expected "</>/<=/>=" (77:13)
+
+[0m [90m 75 |[39m         context[33m:[39m _ctx_1[33m.[39mctx[33m,[39m
+ [90m 76 |[39m         wrapper[33m:[39m ({ children }) [33m=>[39m ([33m<[39m[33mRoot[39m[33m>[39m
+[31m[1m>[22m[39m[90m 77 |[39m         [33m<[39m[33mdiv[39m id[33m=[39m[32m"root"[39m[33m>[39m{children}[33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m    |[39m              [31m[1m^[22m[39m
+ [90m 78 |[39m       [33m<[39m[33m/[39m[33mRoot[39m[33m>[39m)[33m,[39m
+ [90m 79 |[39m     })[33m;[39m
+ [90m 80 |[39m     [90m// Clear any existing static resources from the global scope to attempt to prevent leaking between pages.[39m[0m
+
+Call Stack
+  <unknown> (node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\build\static\renderStaticContent.js)
+Web node_modules\expo-router\_error.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 93.8% (124/128)
+Web node_modules\expo-router\_error.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓░░░░░░░░░░ 41.6% (20/31)
+Web Bundling failed 564ms node_modules\expo-router\entry.js (65 modules)
+Web Bundled 15827ms node_modules\expo-router\_error.js (133 modules)
+Web node_modules\expo-router\_error.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (133/133)
+Web node_modules\expo-router\_error.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 13838ms node_modules\expo-router\_error.js (1 module)
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundling failed 61ms node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (1 module)
+
+Metro error: SyntaxError: C:\Project\ProPalet\node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\build\static\renderStaticContent.js: Unexpected token, expected "</>/<=/>=" (77:13)
+
+[0m [90m 75 |[39m         context[33m:[39m _ctx_1[33m.[39mctx[33m,[39m
+ [90m 76 |[39m         wrapper[33m:[39m ({ children }) [33m=>[39m ([33m<[39m[33mRoot[39m[33m>[39m
+[31m[1m>[22m[39m[90m 77 |[39m         [33m<[39m[33mdiv[39m id[33m=[39m[32m"root"[39m[33m>[39m{children}[33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m    |[39m              [31m[1m^[22m[39m
+ [90m 78 |[39m       [33m<[39m[33m/[39m[33mRoot[39m[33m>[39m)[33m,[39m
+ [90m 79 |[39m     })[33m;[39m
+ [90m 80 |[39m     [90m// Clear any existing static resources from the global scope to attempt to prevent leaking between pages.[39m[0m
+
+Call Stack
+  <unknown> (node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\build\static\renderStaticContent.js)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.6% (53/56)
+Web Bundled 22ms node_modules\expo-router\_error.js (1 module)
+Web Bundling failed 253ms node_modules\expo-router\entry.js (56 modules)
+› Detected a change in babel.config.js. Restart the server to see the new results. You may need to clear the bundler cache with the --clear flag for your changes to take effect.

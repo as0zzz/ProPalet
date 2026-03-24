@@ -1,0 +1,50 @@
+{
+  "name": "propalet",
+  "version": "1.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "prebuild": "expo prebuild",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@nozbe/watermelondb": "^0.28.0",
+    "@react-navigation/native": "^7.1.33",
+    "@shopify/flash-list": "^2.3.1",
+    "date-fns": "^4.1.0",
+    "expo": "~55.0.8",
+    "expo-build-properties": "~55.0.10",
+    "expo-dev-client": "~55.0.18",
+    "expo-file-system": "~55.0.11",
+    "expo-image": "~55.0.6",
+    "expo-linking": "~55.0.8",
+    "expo-print": "~55.0.9",
+    "expo-router": "~55.0.7",
+    "expo-sharing": "~55.0.14",
+    "expo-splash-screen": "~55.0.12",
+    "expo-status-bar": "~55.0.4",
+    "expo-system-ui": "~55.0.10",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-hook-form": "^7.72.0",
+    "react-native": "0.83.2",
+    "react-native-gesture-handler": "~2.30.0",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "react-native-web": "~0.21.0",
+    "zustand": "^5.0.12",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.28.0",
+    "@babel/plugin-transform-class-properties": "^7.27.1",
+    "@babel/plugin-transform-typescript": "^7.28.0",
+    "@types/react": "~19.2.2",
+    "typescript": "~5.9.2"
+  }
+}

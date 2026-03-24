@@ -1,0 +1,31 @@
+
+> propalet@1.0.0 web
+> expo start --web
+
+Starting project at C:\Project\ProPalet
+Using src/app as the root directory for Expo Router.
+React Compiler enabled
+Starting Metro Bundler
+
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 63.3% ( 656/1272)
+λ node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js ▓▓▓▓░░░░░░░░░░░░ 30.6% (210/406)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 63.3% (1367/2080)
+λ node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js ▓▓▓▓▓▓░░░░░░░░░░ 43.0% (405/645)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 83.0% (2027/2225)
+λ node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js ▓▓▓▓▓▓▓▓░░░░░░░░ 51.4% ( 785/1411)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 95.0% (2225/2283)
+λ node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 78.4% (1987/2244)
+Web Bundled 16216ms node_modules\expo-router\entry.js (2544 modules)
+λ Bundled 16376ms node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (2462 modules)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 54.2% (438/595)
+Web Bundled 2689ms node_modules\expo-router\entry.js (2533 modules)
+ LOG  [web] Logs will appear in the browser console
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 92ms node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (1 module)
+Web Bundled 852ms node_modules\expo-router\entry.js (1 module)
+λ Bundled 322ms node_modules\expo\node_modules\@expo\cli\node_modules\@expo\router-server\node\render.js (1 module)
+Web Bundled 119ms node_modules\expo-router\entry.js (1 module)
+Web Bundled 1227ms node_modules\expo-router\entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
