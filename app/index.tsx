@@ -14,8 +14,9 @@ import { useWagonsRepo } from "@/src/repositories/wagonsRepo";
 import { useSchemes } from "@/src/hooks/useSchemes";
 import { useWorkflowStore } from "@/src/state/workflowStore";
 import { palette, radius, spacing, typography } from "@/src/theme";
-import type { WagonRecord } from "@/src/types/domain";
+import type { PackageTypeRecord, WagonRecord } from "@/src/types/domain";
 import { ADMIN_PIN, ADMIN_UNLOCK_CODE, UI_COPY } from "@/src/utils/constants";
+import { buildPackageTypeLabel } from "@/src/utils/search";
 
 function formatWagonSelection(wagon?: WagonRecord): string | undefined {
   if (!wagon) {
@@ -26,11 +27,26 @@ function formatWagonSelection(wagon?: WagonRecord): string | undefined {
     wagon.code,
     wagon.capacityKg ? `${wagon.capacityKg} кг` : undefined,
     wagon.innerLengthMm && wagon.innerWidthMm && wagon.innerHeightMm
-      ? `${wagon.innerLengthMm}×${wagon.innerWidthMm}×${wagon.innerHeightMm} мм`
+      ? `${wagon.innerLengthMm}x${wagon.innerWidthMm}x${wagon.innerHeightMm} мм`
       : undefined,
   ].filter(Boolean);
 
-  return params.length ? `${wagon.name} • ${params.join(" • ")}` : wagon.name;
+  return params.length ? `${wagon.name} | ${params.join(" | ")}` : wagon.name;
+}
+
+function formatPackageSelection(packageType?: PackageTypeRecord): string | undefined {
+  if (!packageType) {
+    return undefined;
+  }
+
+  const params = [
+    packageType.packageDimensions,
+    `${packageType.nominalPackageMassKg} кг`,
+    `${packageType.ingotHeightMm} мм`,
+  ].filter(Boolean);
+
+  const baseLabel = buildPackageTypeLabel(packageType.packageTypeNumber, packageType.constructionVariant);
+  return params.length ? `${baseLabel} | ${params.join(" | ")}` : baseLabel;
 }
 
 export default function HomeScreen() {
@@ -70,9 +86,8 @@ export default function HomeScreen() {
       if (selectedPackageTypeId) {
         const packageType = await packageTypesRepo.getById(selectedPackageTypeId);
         if (active && packageType) {
-          const label = `Пакет №${packageType.packageTypeNumber}, вариант ${packageType.constructionVariant}`;
-          setSelectedPackageLabel(label);
-          setPackageQuery(label);
+          setSelectedPackageLabel(formatPackageSelection(packageType));
+          setPackageQuery(buildPackageTypeLabel(packageType.packageTypeNumber, packageType.constructionVariant));
         }
       }
     }
@@ -156,10 +171,11 @@ export default function HomeScreen() {
         options={packageTypes.options}
         loading={packageTypes.loading}
         selectedLabel={selectedPackageLabel}
-        onSelect={(option) => {
+        onSelect={async (option) => {
           selectPackageType(option.id);
           setPackageQuery(option.label);
-          setSelectedPackageLabel(option.label);
+          const packageType = await packageTypesRepo.getById(option.id);
+          setSelectedPackageLabel(formatPackageSelection(packageType) ?? option.label);
         }}
       />
 
