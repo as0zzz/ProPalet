@@ -1,3 +1,4 @@
+import type { NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { AutocompleteOption } from "@/src/types/domain";
@@ -13,6 +14,7 @@ interface SearchAutocompleteProps {
   selectedLabel?: string;
   loading?: boolean;
   onSelect: (option: AutocompleteOption) => void;
+  onSubmitEditing?: (event: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void;
 }
 
 export function SearchAutocomplete(props: SearchAutocompleteProps) {
@@ -32,6 +34,8 @@ export function SearchAutocomplete(props: SearchAutocompleteProps) {
         ]}
         value={props.query}
         onChangeText={props.onChangeQuery}
+        onSubmitEditing={props.onSubmitEditing}
+        returnKeyType="done"
       />
       {props.selectedLabel ? (
         <View style={styles.selectedCard}>

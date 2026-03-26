@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -13,9 +13,9 @@ import { usePackageTypesRepo } from "@/src/repositories/packageTypesRepo";
 import { useWagonsRepo } from "@/src/repositories/wagonsRepo";
 import { useSchemes } from "@/src/hooks/useSchemes";
 import { useWorkflowStore } from "@/src/state/workflowStore";
-import { palette, spacing, typography } from "@/src/theme";
+import { palette, radius, spacing, typography } from "@/src/theme";
 import type { WagonRecord } from "@/src/types/domain";
-import { ADMIN_GESTURE_TAPS, ADMIN_PIN, ADMIN_REVEAL_DURATION_MS, UI_COPY } from "@/src/utils/constants";
+import { ADMIN_PIN, ADMIN_UNLOCK_CODE, UI_COPY } from "@/src/utils/constants";
 
 function formatWagonSelection(wagon?: WagonRecord): string | undefined {
   if (!wagon) {
@@ -45,13 +45,9 @@ export default function HomeScreen() {
   const [packageQuery, setPackageQuery] = useState("");
   const [selectedWagonLabel, setSelectedWagonLabel] = useState<string>();
   const [selectedPackageLabel, setSelectedPackageLabel] = useState<string>();
-  const [adminButtonVisible, setAdminButtonVisible] = useState(false);
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [pinValue, setPinValue] = useState("");
-  const [pinError, setPinError] = useState<string>();
-  const [headerTapCount, setHeaderTapCount] = useState(0);
-  const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const tapResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [pinError, setPinError] = useState(false);
 
   const wagons = useAutocomplete(wagonQuery, wagonsRepo.observeSearch);
   const packageTypes = useAutocomplete(packageQuery, packageTypesRepo.observeSearch);
@@ -88,51 +84,17 @@ export default function HomeScreen() {
     };
   }, [packageTypesRepo, selectedPackageTypeId, selectedWagonId, wagonsRepo]);
 
-  useEffect(() => {
-    return () => {
-      if (revealTimeoutRef.current) {
-        clearTimeout(revealTimeoutRef.current);
-      }
-      if (tapResetTimeoutRef.current) {
-        clearTimeout(tapResetTimeoutRef.current);
-      }
-    };
-  }, []);
-
   const showSchemes = selectedWagonId && selectedPackageTypeId;
 
-  function revealAdminButton() {
-    setAdminButtonVisible(true);
-    if (revealTimeoutRef.current) {
-      clearTimeout(revealTimeoutRef.current);
-    }
-    revealTimeoutRef.current = setTimeout(() => {
-      setAdminButtonVisible(false);
-    }, ADMIN_REVEAL_DURATION_MS);
-  }
-
-  function handleHeaderPress() {
-    if (tapResetTimeoutRef.current) {
-      clearTimeout(tapResetTimeoutRef.current);
+  function handleAdminCodeSubmit() {
+    if (wagonQuery.trim().toLowerCase() !== ADMIN_UNLOCK_CODE) {
+      return;
     }
 
-    setHeaderTapCount((current) => {
-      const next = current + 1;
-      if (next >= ADMIN_GESTURE_TAPS) {
-        revealAdminButton();
-        return 0;
-      }
-      return next;
-    });
-
-    tapResetTimeoutRef.current = setTimeout(() => {
-      setHeaderTapCount(0);
-    }, 1500);
-  }
-
-  function handleAdminPress() {
+    selectWagon(undefined);
+    setSelectedWagonLabel(undefined);
     setPinValue("");
-    setPinError(undefined);
+    setPinError(false);
     setPinModalVisible(true);
   }
 
@@ -140,23 +102,21 @@ export default function HomeScreen() {
     if (pinValue === ADMIN_PIN) {
       setPinModalVisible(false);
       setPinValue("");
-      setPinError(undefined);
-      setAdminButtonVisible(false);
+      setPinError(false);
+      setWagonQuery("");
       router.push("/admin");
       return;
     }
 
-    setPinError("Неверный PIN-код.");
+    setPinError(true);
   }
 
   return (
     <Page
       title="Подбор схем погрузки"
-      subtitle="Полностью локальный сценарий: поиск модели вагона, типа пакета и подходящей схемы без сети."
-      onHeaderPress={handleHeaderPress}>
+      subtitle="Полностью локальный сценарий: поиск модели вагона, типа пакета и подходящей схемы без сети.">
       <View style={styles.topActions}>
         <LargeActionButton label="История отчетов" variant="secondary" onPress={() => router.push("/reports")} />
-        {adminButtonVisible ? <LargeActionButton label="Админка" variant="secondary" onPress={handleAdminPress} /> : null}
       </View>
 
       <SearchAutocomplete
@@ -170,6 +130,7 @@ export default function HomeScreen() {
             selectWagon(undefined);
           }
         }}
+        onSubmitEditing={handleAdminCodeSubmit}
         options={wagons.options}
         loading={wagons.loading}
         selectedLabel={selectedWagonLabel}
@@ -235,36 +196,28 @@ export default function HomeScreen() {
       ) : null}
 
       <Modal visible={pinModalVisible} transparent animationType="fade" onRequestClose={() => setPinModalVisible(false)}>
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Вход в админку</Text>
-            <Text style={styles.modalText}>Введите PIN-код.</Text>
+        <Pressable style={styles.modalBackdrop} onPress={() => setPinModalVisible(false)}>
+          <Pressable style={styles.modalCard} onPress={() => {}}>
             <TextInput
               value={pinValue}
               onChangeText={(value) => {
                 setPinValue(value);
                 if (pinError) {
-                  setPinError(undefined);
+                  setPinError(false);
                 }
               }}
-              placeholder="PIN-код"
+              onSubmitEditing={handlePinSubmit}
+              placeholder="PIN"
               placeholderTextColor={palette.textMuted}
               keyboardType="number-pad"
               secureTextEntry
               maxLength={12}
-              style={styles.pinInput}
+              returnKeyType="done"
+              style={[styles.pinInput, pinError ? styles.pinInputError : null]}
             />
-            {pinError ? <Text style={styles.pinError}>{pinError}</Text> : null}
-            <View style={styles.modalActions}>
-              <Pressable style={[styles.modalButton, styles.modalButtonSecondary]} onPress={() => setPinModalVisible(false)}>
-                <Text style={styles.modalButtonText}>Отмена</Text>
-              </Pressable>
-              <Pressable style={[styles.modalButton, styles.modalButtonPrimary]} onPress={handlePinSubmit}>
-                <Text style={styles.modalButtonText}>Войти</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
+            <LargeActionButton label="Ввод" onPress={handlePinSubmit} />
+          </Pressable>
+        </Pressable>
       </Modal>
     </Page>
   );
@@ -283,60 +236,24 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     backgroundColor: palette.surface,
-    borderRadius: 20,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: palette.border,
     padding: spacing.lg,
     gap: spacing.md,
   },
-  modalTitle: {
-    color: palette.text,
-    fontSize: typography.title,
-    fontWeight: "800",
-  },
-  modalText: {
-    color: palette.textMuted,
-    fontSize: typography.body,
-  },
   pinInput: {
     borderWidth: 1,
     borderColor: palette.border,
-    borderRadius: 14,
+    borderRadius: radius.md,
     backgroundColor: palette.card,
     color: palette.text,
     fontSize: typography.body,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
   },
-  pinError: {
-    color: palette.danger,
-    fontSize: typography.bodySmall,
-    fontWeight: "700",
-  },
-  modalActions: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  modalButton: {
-    flex: 1,
-    minHeight: 52,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: spacing.md,
-  },
-  modalButtonPrimary: {
-    backgroundColor: palette.accentStrong,
-  },
-  modalButtonSecondary: {
-    backgroundColor: palette.surfaceAlt,
-    borderWidth: 1,
-    borderColor: palette.border,
-  },
-  modalButtonText: {
-    color: palette.text,
-    fontSize: typography.button,
-    fontWeight: "700",
+  pinInputError: {
+    borderColor: palette.danger,
   },
   listContainer: {
     minHeight: 520,

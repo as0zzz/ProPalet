@@ -3,8 +3,7 @@ export const DEMO_SEED_VERSION = "2026.03.24";
 export const REPORTS_DIRECTORY = "propalet-reports";
 export const DICTIONARIES_DIRECTORY = "propalet-dictionaries";
 export const ADMIN_PIN = "2580";
-export const ADMIN_GESTURE_TAPS = 7;
-export const ADMIN_REVEAL_DURATION_MS = 15000;
+export const ADMIN_UNLOCK_CODE = "hesoyam";
 
 export const DB_TABLES = {
   wagons: "wagons",
