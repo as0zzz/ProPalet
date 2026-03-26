@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { palette, spacing, typography } from "@/src/theme";
@@ -8,18 +8,22 @@ export function Page({
   title,
   subtitle,
   children,
+  onHeaderPress,
 }: {
   title: string;
   subtitle?: string;
   children: ReactNode;
+  onHeaderPress?: () => void;
 }) {
+  const HeaderWrapper = onHeaderPress ? Pressable : View;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <View style={styles.header}>
+        <HeaderWrapper style={styles.header} {...(onHeaderPress ? { onPress: onHeaderPress } : {})}>
           <Text style={styles.title}>{title}</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-        </View>
+        </HeaderWrapper>
         {children}
       </ScrollView>
     </SafeAreaView>

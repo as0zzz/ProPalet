@@ -2,7 +2,7 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { Platform } from "react-native";
 
-import { moveFileIntoReportsDirectory, writeDictionaryJsonFile, writeTextReportFile } from "@/src/utils/file";
+import { moveFileIntoReportsDirectory, writeDictionaryJsonFile, writeDictionarySourceFiles, writeTextReportFile } from "@/src/utils/file";
 
 export const WEB_PRINT_SENTINEL = "browser-print";
 
@@ -42,6 +42,12 @@ export const exportService = {
   },
   async exportJson(fileNameBase: string, contents: string): Promise<string> {
     return writeDictionaryJsonFile(fileNameBase, contents);
+  },
+  async exportDictionarySources(
+    directoryName: string,
+    files: Array<{ fileName: string; contents: string }>,
+  ): Promise<string[]> {
+    return writeDictionarySourceFiles(directoryName, files);
   },
   async shareFile(path: string): Promise<void> {
     const available = await Sharing.isAvailableAsync();

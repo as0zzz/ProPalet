@@ -1,4 +1,5 @@
 import * as FileSystem from "expo-file-system/legacy";
+import { Platform } from "react-native";
 
 import { DICTIONARIES_DIRECTORY, REPORTS_DIRECTORY } from "@/src/utils/constants";
 
@@ -15,6 +16,52 @@ async function ensureDirectory(path: string): Promise<void> {
   if (!info.exists) {
     await FileSystem.makeDirectoryAsync(path, { intermediates: true });
   }
+}
+
+function findSafEntry(entries: string[], name: string): string | undefined {
+  return entries.find((entry) => decodeURIComponent(entry).endsWith(`/${name}`));
+}
+
+async function getAndroidDocumentsDirectoryUri(): Promise<string> {
+  const initialUri = FileSystem.StorageAccessFramework.getUriForDirectoryInRoot("Documents");
+  let permission = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync(initialUri);
+  if (!permission.granted || !permission.directoryUri) {
+    permission = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+  }
+
+  if (!permission.granted || !permission.directoryUri) {
+    throw new Error("Не удалось получить доступ к папке Documents. Выберите папку Documents в системном окне.");
+  }
+
+  return permission.directoryUri;
+}
+
+async function writeAndroidDocumentsFile(directoryName: string, fileName: string, contents: string, mimeType: string): Promise<string> {
+  const documentsUri = await getAndroidDocumentsDirectoryUri();
+  return writeAndroidDocumentsFileToDirectory(documentsUri, directoryName, fileName, contents, mimeType);
+}
+
+async function writeAndroidDocumentsFileToDirectory(
+  documentsUri: string,
+  directoryName: string,
+  fileName: string,
+  contents: string,
+  mimeType: string,
+): Promise<string> {
+  let targetDirectoryUri = documentsUri;
+
+  if (directoryName) {
+    const entries = await FileSystem.StorageAccessFramework.readDirectoryAsync(documentsUri);
+    const existingDirectoryUri = findSafEntry(entries, directoryName);
+    targetDirectoryUri = existingDirectoryUri ?? (await FileSystem.StorageAccessFramework.makeDirectoryAsync(documentsUri, directoryName));
+  }
+
+  const fileBaseName = fileName.replace(/\.[^.]+$/, "");
+  const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(targetDirectoryUri, fileBaseName, mimeType);
+  await FileSystem.StorageAccessFramework.writeAsStringAsync(fileUri, contents, {
+    encoding: FileSystem.EncodingType.UTF8,
+  });
+  return fileUri;
 }
 
 function getDocumentDirectory(): string {
@@ -43,6 +90,42 @@ export async function writeDictionaryJsonFile(fileNameBase: string, contents: st
     encoding: FileSystem.EncodingType.UTF8,
   });
   return path;
+}
+
+export async function writeDictionarySourceFile(directoryName: string, fileName: string, contents: string): Promise<string> {
+  if (Platform.OS === "android") {
+    return writeAndroidDocumentsFile(directoryName, fileName, contents, "text/typescript");
+  }
+
+  const baseDirectory = `${getDocumentDirectory()}${DICTIONARIES_DIRECTORY}/`;
+  await ensureDirectory(baseDirectory);
+  const directory = `${baseDirectory}${sanitizeFileNamePart(directoryName)}/`;
+  await ensureDirectory(directory);
+  const path = `${directory}${fileName}`;
+  await FileSystem.writeAsStringAsync(path, contents, {
+    encoding: FileSystem.EncodingType.UTF8,
+  });
+  return path;
+}
+
+export async function writeDictionarySourceFiles(
+  directoryName: string,
+  files: Array<{ fileName: string; contents: string }>,
+): Promise<string[]> {
+  if (Platform.OS === "android") {
+    const documentsUri = await getAndroidDocumentsDirectoryUri();
+    const paths: string[] = [];
+    for (const file of files) {
+      paths.push(await writeAndroidDocumentsFileToDirectory(documentsUri, directoryName, file.fileName, file.contents, "text/typescript"));
+    }
+    return paths;
+  }
+
+  const paths: string[] = [];
+  for (const file of files) {
+    paths.push(await writeDictionarySourceFile(directoryName, file.fileName, file.contents));
+  }
+  return paths;
 }
 
 export async function moveFileIntoReportsDirectory(sourcePath: string, fileNameBase: string, extension: string): Promise<string> {

@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { EmptyState } from "@/src/components/EmptyState";
 import { LargeActionButton } from "@/src/components/LargeActionButton";
 import { Page } from "@/src/components/Page";
 import { useDatabase } from "@/src/db/hooks";
 import { useAuditRepo } from "@/src/repositories/auditRepo";
-import { exportService } from "@/src/services/exportService";
 import { seedService } from "@/src/services/seedService";
 import { palette, radius, spacing, typography } from "@/src/theme";
 import { formatDateTime } from "@/src/utils/date";
@@ -35,7 +34,7 @@ export default function AdminIndexScreen() {
   }, [auditRepo]);
 
   return (
-    <Page title="Админ-раздел" subtitle="CRUD справочников, импорт демо-данных, экспорт JSON и аудит локальных изменений.">
+    <Page title="Админ-раздел" subtitle="CRUD справочников, импорт демо-данных, экспорт seedData и аудит локальных изменений.">
       <View style={styles.grid}>
         <LargeActionButton label="Вагоны" onPress={() => router.push("/admin/wagons")} />
         <LargeActionButton label="Типы пакетов" onPress={() => router.push("/admin/package-types")} />
@@ -45,14 +44,22 @@ export default function AdminIndexScreen() {
 
       <View style={styles.actions}>
         <LargeActionButton label="Импортировать демо-данные" variant="secondary" onPress={() => void seedService.applySeed(database)} />
-        <LargeActionButton label="Переинициализировать seed" variant="secondary" onPress={() => void seedService.resetToDemo(database)} />
         <LargeActionButton
-          label="Экспорт справочников в JSON"
+          label="Экспортировать seedData (4 файла)"
           variant="secondary"
           onPress={() =>
-            void exportService
-              .exportJson("propalet-dictionaries", seedService.exportDictionaries())
-              .then((path) => exportService.shareFile(path))
+            void seedService
+              .exportCurrentSeedData(database)
+              .then((result) => {
+                Alert.alert(
+                  "Файлы сохранены",
+                  `Сохранено ${result.filePaths.length} seedData-файла.\n\nПапка: ${result.directoryName}\n\nДальше замените файлы в src/db/seedData/ и при выпуске новой версии обновите DEMO_SEED_VERSION, например на ${result.recommendedSeedVersion}.`,
+                );
+              })
+              .catch((error: unknown) => {
+                const message = error instanceof Error ? error.message : "Не удалось экспортировать seedData.";
+                Alert.alert("Ошибка экспорта", message);
+              })
           }
         />
       </View>
