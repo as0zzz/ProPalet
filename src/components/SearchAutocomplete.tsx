@@ -1,9 +1,12 @@
 import type { NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { AutocompleteOption } from "@/src/types/domain";
 import { controlHeights, palette, radius, spacing, typography } from "@/src/theme";
 import { useUiStore } from "@/src/state/uiStore";
+
+const MAX_VISIBLE_OPTIONS = 5;
+const OPTION_ITEM_MIN_HEIGHT = 72;
 
 interface SearchAutocompleteProps {
   label: string;
@@ -46,12 +49,21 @@ export function SearchAutocomplete(props: SearchAutocompleteProps) {
       {props.loading ? <Text style={styles.helper}>Поиск по локальной базе...</Text> : null}
       {!props.selectedLabel && props.options.length ? (
         <View style={styles.options}>
-          {props.options.map((option) => (
-            <Pressable key={option.id} onPress={() => props.onSelect(option)} style={styles.optionItem}>
-              <Text style={styles.optionTitle}>{option.label}</Text>
-              {option.hint ? <Text style={styles.optionHint}>{option.hint}</Text> : null}
-            </Pressable>
-          ))}
+          <ScrollView
+            nestedScrollEnabled
+            style={styles.optionsScroll}
+            contentContainerStyle={styles.optionsContent}
+            showsVerticalScrollIndicator>
+            {props.options.map((option, index) => (
+              <Pressable
+                key={option.id}
+                onPress={() => props.onSelect(option)}
+                style={[styles.optionItem, index === props.options.length - 1 ? styles.optionItemLast : null]}>
+                <Text style={styles.optionTitle}>{option.label}</Text>
+                {option.hint ? <Text style={styles.optionHint}>{option.hint}</Text> : null}
+              </Pressable>
+            ))}
+          </ScrollView>
         </View>
       ) : null}
     </View>
@@ -109,11 +121,21 @@ const styles = StyleSheet.create({
     borderColor: palette.border,
     overflow: "hidden",
   },
+  optionsScroll: {
+    maxHeight: MAX_VISIBLE_OPTIONS * OPTION_ITEM_MIN_HEIGHT,
+  },
+  optionsContent: {
+    flexGrow: 1,
+  },
   optionItem: {
+    minHeight: OPTION_ITEM_MIN_HEIGHT,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: palette.border,
+  },
+  optionItemLast: {
+    borderBottomWidth: 0,
   },
   optionTitle: {
     color: palette.text,

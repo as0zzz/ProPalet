@@ -1,6 +1,8 @@
 export const APP_NAME = "ProPalet";
 export const DEMO_SEED_VERSION = "2026.03.24";
 export const REPORTS_DIRECTORY = "propalet-reports";
+export const PDF_REPORTS_DIRECTORY = "pdf-reports";
+export const ANDROID_REPORTS_PICKER_DIRECTORY = "reports";
 export const DICTIONARIES_DIRECTORY = "propalet-dictionaries";
 export const ADMIN_PIN = "2580";
 export const ADMIN_UNLOCK_CODE = "hesoyam";

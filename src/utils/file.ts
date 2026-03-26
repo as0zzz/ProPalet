@@ -1,141 +1,181 @@
 import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
 
-import { DICTIONARIES_DIRECTORY, REPORTS_DIRECTORY } from "@/src/utils/constants";
+import { ANDROID_REPORTS_PICKER_DIRECTORY, DICTIONARIES_DIRECTORY, REPORTS_DIRECTORY } from "@/src/utils/constants";
 
-function sanitizeFileNamePart(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-_]/g, "");
+const ANDROID_DOCUMENTS_DIRECTORY = "Documents";
+
+function sanitizeFileNamePart(value: string) {
+  return value.replace(/[<>:"/\\|?*\u0000-\u001F]/g, "-").trim() || "export";
 }
 
-async function ensureDirectory(path: string): Promise<void> {
-  const info = await FileSystem.getInfoAsync(path);
-  if (!info.exists) {
-    await FileSystem.makeDirectoryAsync(path, { intermediates: true });
-  }
-}
-
-function findSafEntry(entries: string[], name: string): string | undefined {
-  return entries.find((entry) => decodeURIComponent(entry).endsWith(`/${name}`));
-}
-
-async function getAndroidDocumentsDirectoryUri(): Promise<string> {
-  const initialUri = FileSystem.StorageAccessFramework.getUriForDirectoryInRoot("Documents");
-  let permission = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync(initialUri);
-  if (!permission.granted || !permission.directoryUri) {
-    permission = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
-  }
-
-  if (!permission.granted || !permission.directoryUri) {
-    throw new Error("Не удалось получить доступ к папке Documents. Выберите папку Documents в системном окне.");
-  }
-
-  return permission.directoryUri;
-}
-
-async function writeAndroidDocumentsFile(directoryName: string, fileName: string, contents: string, mimeType: string): Promise<string> {
-  const documentsUri = await getAndroidDocumentsDirectoryUri();
-  return writeAndroidDocumentsFileToDirectory(documentsUri, directoryName, fileName, contents, mimeType);
-}
-
-async function writeAndroidDocumentsFileToDirectory(
-  documentsUri: string,
-  directoryName: string,
-  fileName: string,
-  contents: string,
-  mimeType: string,
-): Promise<string> {
-  let targetDirectoryUri = documentsUri;
-
-  if (directoryName) {
-    const entries = await FileSystem.StorageAccessFramework.readDirectoryAsync(documentsUri);
-    const existingDirectoryUri = findSafEntry(entries, directoryName);
-    targetDirectoryUri = existingDirectoryUri ?? (await FileSystem.StorageAccessFramework.makeDirectoryAsync(documentsUri, directoryName));
-  }
-
-  const fileBaseName = fileName.replace(/\.[^.]+$/, "");
-  const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(targetDirectoryUri, fileBaseName, mimeType);
-  await FileSystem.StorageAccessFramework.writeAsStringAsync(fileUri, contents, {
-    encoding: FileSystem.EncodingType.UTF8,
-  });
-  return fileUri;
-}
-
-function getDocumentDirectory(): string {
+function getDocumentDirectory() {
   if (!FileSystem.documentDirectory) {
-    throw new Error("Документы на устройстве недоступны.");
+    throw new Error("Локальная папка приложения недоступна.");
   }
 
   return FileSystem.documentDirectory;
 }
 
-export async function writeTextReportFile(fileNameBase: string, contents: string): Promise<string> {
-  const directory = `${getDocumentDirectory()}${REPORTS_DIRECTORY}/`;
-  await ensureDirectory(directory);
-  const path = `${directory}${sanitizeFileNamePart(fileNameBase)}.txt`;
-  await FileSystem.writeAsStringAsync(path, contents, {
-    encoding: FileSystem.EncodingType.UTF8,
-  });
-  return path;
+function joinPath(baseUri: string, name: string) {
+  return baseUri.endsWith("/") ? `${baseUri}${name}` : `${baseUri}/${name}`;
 }
 
-export async function writeDictionaryJsonFile(fileNameBase: string, contents: string): Promise<string> {
-  const directory = `${getDocumentDirectory()}${DICTIONARIES_DIRECTORY}/`;
-  await ensureDirectory(directory);
-  const path = `${directory}${sanitizeFileNamePart(fileNameBase)}.json`;
-  await FileSystem.writeAsStringAsync(path, contents, {
-    encoding: FileSystem.EncodingType.UTF8,
-  });
-  return path;
+function getSafEntryName(uri: string) {
+  const decoded = decodeURIComponent(uri);
+  const tail = decoded.slice(decoded.lastIndexOf("/") + 1);
+  return tail.slice(tail.lastIndexOf(":") + 1);
 }
 
-export async function writeDictionarySourceFile(directoryName: string, fileName: string, contents: string): Promise<string> {
-  if (Platform.OS === "android") {
-    return writeAndroidDocumentsFile(directoryName, fileName, contents, "text/typescript");
+async function ensureDirectory(directoryUri: string) {
+  const info = await FileSystem.getInfoAsync(directoryUri);
+  if (!info.exists) {
+    await FileSystem.makeDirectoryAsync(directoryUri, { intermediates: true });
+  }
+}
+
+async function findSafEntry(parentUri: string, name: string) {
+  const entries = await FileSystem.StorageAccessFramework.readDirectoryAsync(parentUri);
+  return entries.find((entryUri) => getSafEntryName(entryUri) === name);
+}
+
+async function ensureSafDirectory(parentUri: string, directoryName: string) {
+  const existing = await findSafEntry(parentUri, directoryName);
+  if (existing) {
+    return existing;
   }
 
-  const baseDirectory = `${getDocumentDirectory()}${DICTIONARIES_DIRECTORY}/`;
-  await ensureDirectory(baseDirectory);
-  const directory = `${baseDirectory}${sanitizeFileNamePart(directoryName)}/`;
-  await ensureDirectory(directory);
-  const path = `${directory}${fileName}`;
-  await FileSystem.writeAsStringAsync(path, contents, {
-    encoding: FileSystem.EncodingType.UTF8,
-  });
-  return path;
+  return FileSystem.StorageAccessFramework.makeDirectoryAsync(parentUri, directoryName);
 }
 
-export async function writeDictionarySourceFiles(
-  directoryName: string,
-  files: Array<{ fileName: string; contents: string }>,
-): Promise<string[]> {
+async function replaceSafFile(parentUri: string, fileName: string, mimeType: string, contents: string, encoding: "utf8" | "base64") {
+  const existing = await findSafEntry(parentUri, fileName);
+  if (existing) {
+    await FileSystem.deleteAsync(existing, { idempotent: true });
+  }
+
+  const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(parentUri, fileName, mimeType);
+  await FileSystem.writeAsStringAsync(fileUri, contents, { encoding });
+  return fileUri;
+}
+
+async function getAndroidDocumentsDirectoryUri() {
+  const initialUri = FileSystem.StorageAccessFramework.getUriForDirectoryInRoot(ANDROID_DOCUMENTS_DIRECTORY);
+  const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync(initialUri);
+
+  if (!permissions.granted || !permissions.directoryUri) {
+    throw new Error("Доступ к папке Documents не выдан.");
+  }
+
+  if (getSafEntryName(permissions.directoryUri) !== ANDROID_DOCUMENTS_DIRECTORY) {
+    throw new Error("Выберите папку Documents и нажмите Use this folder.");
+  }
+
+  return permissions.directoryUri;
+}
+
+async function getAndroidReportsDirectoryUri() {
+  const documentsUri = await getAndroidDocumentsDirectoryUri();
+  return ensureSafDirectory(documentsUri, ANDROID_REPORTS_PICKER_DIRECTORY);
+}
+
+function getMimeType(extension: string) {
+  switch (extension) {
+    case "pdf":
+      return "application/pdf";
+    case "json":
+      return "application/json";
+    case "txt":
+    case "ts":
+      return "text/plain";
+    default:
+      return "application/octet-stream";
+  }
+}
+
+export async function writeTextReportFile(fileNameBase: string, text: string) {
+  const safeFileName = `${sanitizeFileNamePart(fileNameBase)}.txt`;
+
+  if (Platform.OS === "android") {
+    const reportsUri = await getAndroidReportsDirectoryUri();
+    return replaceSafFile(reportsUri, safeFileName, getMimeType("txt"), text, "utf8");
+  }
+
+  const directoryUri = joinPath(getDocumentDirectory(), REPORTS_DIRECTORY);
+  await ensureDirectory(directoryUri);
+
+  const fileUri = joinPath(directoryUri, safeFileName);
+  await FileSystem.writeAsStringAsync(fileUri, text, { encoding: FileSystem.EncodingType.UTF8 });
+  return fileUri;
+}
+
+export async function writeDictionaryJsonFile(fileNameBase: string, contents: string) {
+  const safeFileName = `${sanitizeFileNamePart(fileNameBase)}.json`;
+
   if (Platform.OS === "android") {
     const documentsUri = await getAndroidDocumentsDirectoryUri();
-    const paths: string[] = [];
-    for (const file of files) {
-      paths.push(await writeAndroidDocumentsFileToDirectory(documentsUri, directoryName, file.fileName, file.contents, "text/typescript"));
-    }
-    return paths;
+    const dictionariesUri = await ensureSafDirectory(documentsUri, DICTIONARIES_DIRECTORY);
+    return replaceSafFile(dictionariesUri, safeFileName, getMimeType("json"), contents, "utf8");
   }
 
-  const paths: string[] = [];
-  for (const file of files) {
-    paths.push(await writeDictionarySourceFile(directoryName, file.fileName, file.contents));
-  }
-  return paths;
+  const directoryUri = joinPath(getDocumentDirectory(), DICTIONARIES_DIRECTORY);
+  await ensureDirectory(directoryUri);
+
+  const fileUri = joinPath(directoryUri, safeFileName);
+  await FileSystem.writeAsStringAsync(fileUri, contents, { encoding: FileSystem.EncodingType.UTF8 });
+  return fileUri;
 }
 
-export async function moveFileIntoReportsDirectory(sourcePath: string, fileNameBase: string, extension: string): Promise<string> {
-  const directory = `${getDocumentDirectory()}${REPORTS_DIRECTORY}/`;
-  await ensureDirectory(directory);
-  const destination = `${directory}${sanitizeFileNamePart(fileNameBase)}.${extension}`;
-  const currentInfo = await FileSystem.getInfoAsync(destination);
-  if (currentInfo.exists) {
-    await FileSystem.deleteAsync(destination, { idempotent: true });
+export async function writeDictionarySourceFiles(directoryName: string, files: Array<{ fileName: string; contents: string }>) {
+  if (Platform.OS === "android") {
+    const documentsUri = await getAndroidDocumentsDirectoryUri();
+    const exportDirectoryUri = await ensureSafDirectory(documentsUri, sanitizeFileNamePart(directoryName));
+
+    const fileUris: string[] = [];
+    for (const file of files) {
+      const safeFileName = sanitizeFileNamePart(file.fileName);
+      const fileUri = await replaceSafFile(exportDirectoryUri, safeFileName, getMimeType("ts"), file.contents, "utf8");
+      fileUris.push(fileUri);
+    }
+
+    return fileUris;
   }
-  await FileSystem.moveAsync({ from: sourcePath, to: destination });
-  return destination;
+
+  const rootDirectoryUri = joinPath(getDocumentDirectory(), DICTIONARIES_DIRECTORY);
+  const exportDirectoryUri = joinPath(rootDirectoryUri, sanitizeFileNamePart(directoryName));
+  await ensureDirectory(exportDirectoryUri);
+
+  const fileUris: string[] = [];
+  for (const file of files) {
+    const fileUri = joinPath(exportDirectoryUri, sanitizeFileNamePart(file.fileName));
+    await FileSystem.writeAsStringAsync(fileUri, file.contents, { encoding: FileSystem.EncodingType.UTF8 });
+    fileUris.push(fileUri);
+  }
+
+  return fileUris;
+}
+
+export async function moveFileIntoReportsDirectory(sourcePath: string, fileNameBase: string, extension: string) {
+  const safeFileName = `${sanitizeFileNamePart(fileNameBase)}.${extension}`;
+
+  if (Platform.OS === "android") {
+    const reportsUri = await getAndroidReportsDirectoryUri();
+    const base64Contents = await FileSystem.readAsStringAsync(sourcePath, { encoding: FileSystem.EncodingType.Base64 });
+    const targetUri = await replaceSafFile(reportsUri, safeFileName, getMimeType(extension), base64Contents, "base64");
+    await FileSystem.deleteAsync(sourcePath, { idempotent: true });
+    return targetUri;
+  }
+
+  const directoryUri = joinPath(getDocumentDirectory(), REPORTS_DIRECTORY);
+  await ensureDirectory(directoryUri);
+
+  const targetUri = joinPath(directoryUri, safeFileName);
+  const existing = await FileSystem.getInfoAsync(targetUri);
+  if (existing.exists) {
+    await FileSystem.deleteAsync(targetUri, { idempotent: true });
+  }
+
+  await FileSystem.copyAsync({ from: sourcePath, to: targetUri });
+  await FileSystem.deleteAsync(sourcePath, { idempotent: true });
+  return targetUri;
 }
